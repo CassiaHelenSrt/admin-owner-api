@@ -9,23 +9,25 @@ export class ClientService {
             throw new Error("Nome do cliente é obrigatório");
         }
 
-        if (!data.email?.includes("@")) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const normalizedEmail = data.email.toLowerCase().trim();
+
+        if (!emailRegex.test(normalizedEmail)) {
             throw new Error("Email inválido");
         }
 
         const emailExists = this.clients.find(
-            (c) => c.email === data.email && c.userId === userId,
+            (c) => c.email === normalizedEmail && c.userId === userId,
         );
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailRegex.test(data.email)) {
+        if (emailExists) {
             throw new Error("Este e-mail já está cadastrado.");
         }
 
         const newClient: Client = {
             id: randomUUID(),
             ...data,
+            email: normalizedEmail,
             userId,
         };
 
