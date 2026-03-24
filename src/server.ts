@@ -1,7 +1,10 @@
+import "reflect-metadata";
+
 import express from "express";
 import clientRoutes from "./routes/client.routes";
 import authRoutes from "./routes/auth.router";
 import productRoute from "./routes/product.routes";
+import { AppDataSource } from "./config/data-source";
 
 const app = express();
 
@@ -12,6 +15,14 @@ app.use(authRoutes);
 app.use("/clients", clientRoutes);
 app.use("/product", productRoute);
 
-app.listen(3000, () => {
-    console.log("Servidor rodando na porta 3000");
-});
+AppDataSource.initialize()
+    .then(() => {
+        console.log("Conectado ao MySQL!");
+
+        app.listen(3000, () => {
+            console.log("Servidor rodando na porta 3000");
+        });
+    })
+    .catch((error) => {
+        console.error("Erro ao conectar no banco:", error);
+    });

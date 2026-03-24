@@ -21,6 +21,8 @@ export const authMiddleware = (
         const decored = jwt.verify(token, SECRET_KEY) as any;
         req.user = decored; // id
 
+        console.log(req.user);
+
         next();
     } catch (error) {
         return res.status(401).json({ message: "Token inválido" });
