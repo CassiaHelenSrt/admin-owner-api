@@ -3,14 +3,26 @@ import { AuthService } from "../services/auth.service";
 
 const authService = new AuthService();
 
-export const login = (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body;
 
-        const result = authService.login(username, password);
+        const result = await authService.login(username, password);
 
         res.json(result);
     } catch (error: any) {
         res.status(401).json({ message: error.message });
+    }
+};
+
+export const createUser = async (req: Request, res: Response) => {
+    try {
+        const { name, email, password } = req.body;
+
+        const user = await authService.createUser(name, email, password);
+
+        res.status(201).json(user);
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
     }
 };

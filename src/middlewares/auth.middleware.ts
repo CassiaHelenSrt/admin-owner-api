@@ -18,10 +18,12 @@ export const authMiddleware = (
     }
 
     try {
-        const decored = jwt.verify(token, SECRET_KEY) as any;
-        req.user = decored; // id
+        const decoded = jwt.verify(token, SECRET_KEY) as {
+            id: number;
+            role: string;
+        };
 
-        console.log(req.user);
+        req.user = decoded;
 
         next();
     } catch (error) {

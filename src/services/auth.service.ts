@@ -1,26 +1,47 @@
 import jwt from "jsonwebtoken";
-
+import bcrypt from "bcryptjs";
+import { AppDataSource } from "../config/data-source";
+import { User } from "../entities/User";
 const SECRET_KEY = "3fa38e665f28951d5f4e4706770cf0465f0c901a";
 
-const users = [
-    { id: 1, username: "admin", password: "123456", role: "admin" },
-    { id: 2, username: "cassia", password: "123456", role: "user" },
-];
+// const users = [
+//     { id: 1, username: "admin", password: "123456", role: "admin" },
+//     { id: 2, username: "cassia", password: "123456", role: "user" },
+// ];
 
 export class AuthService {
-    login(username: string, password: string) {
-        const user = users.find(
-            (u) => u.username === username && u.password === password,
-        );
+    private repo = AppDataSource.getRepository(User);
+
+    async createUser(name: string, email: string, password: string) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = this.repo.create({
+            name,
+            email,
+            password: hashedPassword,
+        });
+
+        return this.repo.save(user);
+    }
+
+    async login(email: string, password: string) {
+        const user = await this.repo.findOne({
+            where: { email },
+        });
 
         if (!user) {
-            throw new Error("Usuário ou senha inválidos");
+            throw new Error("Usuário não encontrado");
+        }
+
+        const isValid = await bcrypt.compare(password, user.password);
+
+        if (!isValid) {
+            throw new Error("Senha inválida");
         }
 
         const token = jwt.sign(
             {
                 id: user.id,
-                username: user.username,
                 role: user.role,
             },
             SECRET_KEY,

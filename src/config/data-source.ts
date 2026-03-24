@@ -1,5 +1,7 @@
 // import "reflect-metadata";
 import { DataSource } from "typeorm";
+import { User } from "../entities/User";
+import { Client } from "../entities/Client";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -10,5 +12,5 @@ export const AppDataSource = new DataSource({
     database: "beauty_management_system",
     synchronize: true, // cria tabelas automaticamente (bom pra dev)
     logging: false,
-    entities: ["src/entity/*.ts"], // onde ficarão suas classes (entidades)
+    entities: [User, Client], // onde ficarão suas classes (entidades)
 });
