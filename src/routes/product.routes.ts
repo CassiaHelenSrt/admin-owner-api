@@ -5,6 +5,6 @@ import { authMiddleware } from "../middlewares/auth.middleware";
 const router = Router();
 
 // só usuário logado pode acessar
-router.get("/", authMiddleware, createProduct);
+router.post("/", authMiddleware, createProduct);
 
 export default router;

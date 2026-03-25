@@ -2,7 +2,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { AppDataSource } from "../config/data-source";
 import { User } from "../entities/User";
-const SECRET_KEY = "3fa38e665f28951d5f4e4706770cf0465f0c901a";
+
+const SECRET_KEY = process.env.JWT_SECRET;
 
 export class AuthService {
     private repo = AppDataSource.getRepository(User);
@@ -22,16 +23,21 @@ export class AuthService {
     async login(email: string, password: string) {
         const user = await this.repo.findOne({
             where: { email },
+            select: ["id", "email", "password", "role"],
         });
 
         if (!user) {
-            throw new Error("Usuário não encontrado");
+            throw new Error("Email ou senha inválidos");
         }
 
         const isValid = await bcrypt.compare(password, user.password);
 
         if (!isValid) {
-            throw new Error("Senha inválida");
+            throw new Error("Email ou senha inválidos");
+        }
+
+        if (!SECRET_KEY) {
+            throw new Error("JWT_SECRET não definido");
         }
 
         const token = jwt.sign(
@@ -43,6 +49,13 @@ export class AuthService {
             { expiresIn: "1h" },
         );
 
-        return { token };
+        return {
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+            },
+        };
     }
 }

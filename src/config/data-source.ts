@@ -2,6 +2,7 @@
 import { DataSource } from "typeorm";
 import { User } from "../entities/User";
 import { Client } from "../entities/Client";
+import { Product } from "../entities/Product";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -12,5 +13,5 @@ export const AppDataSource = new DataSource({
     database: "beauty_management_system",
     synchronize: true, // cria tabelas automaticamente (bom pra dev)
     logging: false,
-    entities: [User, Client], // onde ficarão suas classes (entidades)
+    entities: [User, Client, Product], // onde ficarão suas classes (entidades)
 });

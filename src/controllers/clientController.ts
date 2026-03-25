@@ -6,6 +6,12 @@ const clientService = new ClientService();
 
 export const createClient = async (req: Request, res: Response) => {
     try {
+        if (req.user?.role !== "admin") {
+            return res.status(403).json({
+                message: "Apenas administradores podem criar clientes",
+            });
+        }
+
         const { name, phone, email } = req.body;
 
         const userId = req.user?.id;

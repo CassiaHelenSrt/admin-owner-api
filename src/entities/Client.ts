@@ -1,7 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
-
+import { Unique } from "typeorm";
 import { User } from "./User";
 
+@Unique(["email", "user"])
 @Entity("clients")
 export class Client {
     @PrimaryGeneratedColumn()
@@ -10,7 +11,7 @@ export class Client {
     @Column()
     name!: string;
 
-    @Column()
+    @Column({ unique: true })
     email!: string;
 
     @Column()

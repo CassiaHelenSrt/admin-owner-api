@@ -8,8 +8,9 @@ export const login = async (req: Request, res: Response) => {
         const { username, password } = req.body;
 
         const result = await authService.login(username, password);
+        console.log(result);
 
-        res.json(result);
+        return res.json(result);
     } catch (error: any) {
         res.status(401).json({ message: error.message });
     }
@@ -21,7 +22,7 @@ export const createUser = async (req: Request, res: Response) => {
 
         const user = await authService.createUser(name, email, password);
 
-        res.status(201).json(user);
+        return res.status(201).json(user);
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import "dotenv/config";
 
 import express from "express";
 import clientRoutes from "./routes/client.routes";
@@ -12,7 +13,7 @@ app.use(express.json());
 
 app.use(authRoutes);
 
-app.use("/clients", clientRoutes);
+app.use("/client", clientRoutes);
 app.use("/product", productRoute);
 
 AppDataSource.initialize()

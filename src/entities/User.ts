@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Client } from "./Client";
+import { Product } from "./Product";
 
 export enum UserRole {
     ADMIN = "admin",
@@ -17,7 +18,7 @@ export class User {
     @Column({ unique: true })
     email!: string;
 
-    @Column()
+    @Column({ select: false })
     password!: string;
 
     @Column({
@@ -29,4 +30,5 @@ export class User {
 
     @OneToMany(() => Client, (client) => client.user)
     clients!: Client[];
+    products!: Product[];
 }

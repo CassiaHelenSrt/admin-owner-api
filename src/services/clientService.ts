@@ -17,9 +17,22 @@ export class ClientService {
         if (!user) {
             throw new Error("Usuário não encontrado");
         }
+        const email = data.email.toLowerCase().trim();
+
+        const emailExistente = await this.clientRepo.findOne({
+            where: {
+                email,
+                user: { id: userId },
+            },
+        });
+
+        if (emailExistente) {
+            throw new Error("Este e-mail já está cadastrado.");
+        }
 
         const client = this.clientRepo.create({
             ...data,
+            email,
             user,
         });
 
