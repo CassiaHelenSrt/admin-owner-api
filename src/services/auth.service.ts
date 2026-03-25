@@ -4,11 +4,6 @@ import { AppDataSource } from "../config/data-source";
 import { User } from "../entities/User";
 const SECRET_KEY = "3fa38e665f28951d5f4e4706770cf0465f0c901a";
 
-// const users = [
-//     { id: 1, username: "admin", password: "123456", role: "admin" },
-//     { id: 2, username: "cassia", password: "123456", role: "user" },
-// ];
-
 export class AuthService {
     private repo = AppDataSource.getRepository(User);
 

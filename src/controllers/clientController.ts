@@ -4,21 +4,24 @@ import { ClientService } from "../services/clientService";
 
 const clientService = new ClientService();
 
-export const createClient = (req: Request, res: Response) => {
+export const createClient = async (req: Request, res: Response) => {
     try {
-        const client = clientService.createClient(
-            req.body,
-            req.user!.id, //token
+        const { name, phone, email } = req.body;
+
+        const userId = req.user?.id;
+
+        const client = await clientService.createClient(
+            { name, phone, email },
+            userId!,
         );
 
-        return res.status(201).json(client);
+        res.status(201).json(client);
     } catch (error: any) {
-        return res.status(400).json({ message: error.message });
-        //austar depois este erro
+        res.status(400).json({ message: error.message });
     }
 };
 
-export const getClients = (req: Request, res: Response) => {
-    const clients = clientService.getClientsByUser(req.user!.id);
-    res.json(clients);
-};
+// export const getClients = (req: Request, res: Response) => {
+//     const clients = clientService.getClientsByUser(req.user!.id);
+//     res.json(clients);
+// };

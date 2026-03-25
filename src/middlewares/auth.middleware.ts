@@ -23,7 +23,7 @@ export const authMiddleware = (
             role: string;
         };
 
-        req.user = decoded;
+        req.user = decoded; //id
 
         next();
     } catch (error) {
