@@ -21,10 +21,13 @@ export class AuthService {
     }
 
     async login(email: string, password: string) {
+        console.log("EMAIL RECEBIDO:", email);
         const user = await this.repo.findOne({
             where: { email },
             select: ["id", "email", "password", "role"],
         });
+
+        console.log("USUÁRIO ENCONTRADO:", user);
 
         if (!user) {
             throw new Error("Email ou senha inválidos");
