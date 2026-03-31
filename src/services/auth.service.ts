@@ -27,7 +27,7 @@ export class AuthService {
             select: ["id", "email", "password", "role"],
         });
 
-        console.log("USUÁRIO ENCONTRADO:", user);
+        // console.log("USUÁRIO ENCONTRADO:", user);
 
         if (!user) {
             throw new Error("Email ou senha inválidos");

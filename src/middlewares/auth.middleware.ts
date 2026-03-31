@@ -11,8 +11,8 @@ export const authMiddleware = (
 ) => {
     const token = req.headers.authorization?.split(" ")[1];
 
-    console.log("HEADER:", req.headers.authorization);
-    console.log("TOKEN:", token);
+    // console.log("HEADER:", req.headers.authorization);
+    // console.log("TOKEN:", token);
 
     if (!token) {
         return res.status(401).json({ message: "Token não fornecido" });
