@@ -9,24 +9,33 @@ export const authMiddleware = (
     res: Response,
     next: NextFunction,
 ) => {
-    const token = req.headers.authorization?.split(" ")[1];
+    const authHeader = req.headers.authorization;
 
-    // console.log("HEADER:", req.headers.authorization);
-    // console.log("TOKEN:", token);
-
-    if (!token) {
+    if (!authHeader) {
         return res.status(401).json({ message: "Token não fornecido" });
     }
 
+    const parts = authHeader.split(" ");
+
+    if (parts.length !== 2) {
+        return res.status(401).json({ message: "Token mal formatado" });
+    }
+
+    const [scheme, token] = parts;
+
+    if (scheme !== "Bearer") {
+        return res.status(401).json({ message: "Token mal formatado" });
+    }
+
     try {
-        const decoded = jwt.verify(token, SECRET_KEY as string) as {
+        const decoded = jwt.verify(token, SECRET_KEY!) as {
             id: number;
             role: string;
         };
 
-        req.user = decoded; //id
+        req.user = decoded;
 
-        next();
+        return next();
     } catch (error) {
         return res.status(401).json({ message: "Token inválido" });
     }

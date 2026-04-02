@@ -3,7 +3,7 @@ import { User } from "./User";
 import { Client } from "./Client";
 import { Product } from "./Product";
 
-@Entity()
+@Entity("schedules")
 export class Schedule {
     @PrimaryGeneratedColumn()
     id!: number;
@@ -11,7 +11,7 @@ export class Schedule {
     @ManyToOne(() => Client)
     client!: Client;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, (user) => user.schedules)
     user!: User;
 
     @ManyToOne(() => Product)

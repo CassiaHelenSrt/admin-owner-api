@@ -5,8 +5,8 @@ import express from "express";
 import clientRoutes from "./routes/client.routes";
 import authRoutes from "./routes/auth.router";
 import productRoute from "./routes/product.routes";
+import createSchedule from "./routes/schedule.router";
 import { AppDataSource } from "./config/data-source";
-import { createSchedule } from "./controllers/schedule.controller";
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.use(authRoutes);
 
 app.use("/client", clientRoutes);
 app.use("/product", productRoute);
-app.use("/createSchedule", createSchedule);
+app.use("/schedules", createSchedule);
 
 AppDataSource.initialize()
     .then(() => {

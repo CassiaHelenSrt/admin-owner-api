@@ -48,11 +48,10 @@ export class ScheduleService {
 
         const conflict = await this.scheduleRepo
             .createQueryBuilder("schedule")
-            .where("schedule.userId = :userId", { userId })
-            .andWhere(
-                "(schedule.startTime < :endTime AND schedule.endTime > :start)",
-                { start, endTime },
-            )
+            .leftJoin("schedule.user", "user")
+            .where("user.id = :userId", { userId })
+            .andWhere("schedule.startTime < :endTime", { endTime })
+            .andWhere("schedule.endTime > :start", { start })
             .getOne();
 
         if (conflict) {
