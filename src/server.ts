@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.router";
 import productRoute from "./routes/product.routes";
 import createSchedule from "./routes/schedule.router";
 import { AppDataSource } from "./config/data-source";
+import availabilityRoutes from "./routes/availability.routes";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(authRoutes);
 app.use("/client", clientRoutes);
 app.use("/product", productRoute);
 app.use("/schedules", createSchedule);
+app.use("/availability", availabilityRoutes);
 
 AppDataSource.initialize()
     .then(() => {

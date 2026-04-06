@@ -4,6 +4,7 @@ import { User } from "../entities/User";
 import { Client } from "../entities/Client";
 import { Product } from "../entities/Product";
 import { Schedule } from "../entities/Schedule";
+import { Availability } from "../entities/Availability";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -14,5 +15,5 @@ export const AppDataSource = new DataSource({
     database: "beauty_management_system",
     synchronize: true, // cria tabelas automaticamente (bom pra dev)
     logging: false,
-    entities: [User, Client, Product, Schedule], // onde ficarão suas classes (entidades)
+    entities: [User, Client, Product, Schedule, Availability], // onde ficarão suas classes (entidades)
 });
