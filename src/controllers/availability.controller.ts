@@ -28,7 +28,14 @@ export const getAvailability = async (req: Request, res: Response) => {
 export const getAvailableSlots = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
+        const { productId } = req.params;
         const { date } = req.query;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Usuário não autenticado",
+            });
+        }
 
         if (!date) {
             return res.status(400).json({
@@ -36,7 +43,23 @@ export const getAvailableSlots = async (req: Request, res: Response) => {
             });
         }
 
-        const data = await service.getAvailableSlots(userId!, String(date));
+        if (!productId || isNaN(Number(productId))) {
+            return res.status(400).json({
+                message: "productId inválido",
+            });
+        }
+
+        if (!date) {
+            return res.status(400).json({
+                message: "date é obrigatório",
+            });
+        }
+
+        const data = await service.getAvailableSlots(
+            userId!,
+            String(date),
+            Number(productId),
+        );
 
         return res.json(data);
     } catch (error: any) {
