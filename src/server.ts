@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import "dotenv/config";
+import cors from "cors";
 
 import express from "express";
 import clientRoutes from "./routes/client.routes";
@@ -10,6 +11,8 @@ import { AppDataSource } from "./config/data-source";
 import availabilityRoutes from "./routes/availability.routes";
 
 const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 

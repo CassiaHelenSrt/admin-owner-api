@@ -27,7 +27,7 @@ export const createClient = async (req: Request, res: Response) => {
     }
 };
 
-// export const getClients = (req: Request, res: Response) => {
-//     const clients = clientService.getClientsByUser(req.user!.id);
-//     res.json(clients);
-// };
+export const getClients = async (req: Request, res: Response) => {
+    const clients = await clientService.getClientsByUser(req.user!.id);
+    res.json(clients);
+};
