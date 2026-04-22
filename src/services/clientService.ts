@@ -1,5 +1,6 @@
 import { AppDataSource } from "../config/data-source";
 import { Client } from "../entities/Client";
+
 import { User } from "../entities/User";
 
 export class ClientService {
@@ -36,10 +37,33 @@ export class ClientService {
         return this.clientRepo.save(client);
     }
 
+    async getAllClients() {
+        // Retorna todos os clientes cadastrados no sistema global
+        return await this.clientRepo.find();
+    }
+
     async getClientsByUser(userId: number) {
         return await this.clientRepo.find({
             where: { user: { id: userId } },
         });
+    }
+
+    async getClientById(clientId: number, userId: number) {
+        const client = await this.clientRepo.findOne({
+            where: {
+                id: clientId,
+                user: { id: userId },
+            },
+            relations: ["schedules"],
+        });
+
+        if (!client) {
+            throw new Error(
+                "Cliente não encontrado ou você não tem permissão.",
+            );
+        }
+
+        return client;
     }
 
     async updateClient(clientId: number, userId: number, data: any) {
@@ -71,7 +95,34 @@ export class ClientService {
             data.email = email;
         }
 
+        delete data.id;
+        delete data.user;
+        delete data.userId;
+
         this.clientRepo.merge(client, data);
         return await this.clientRepo.save(client);
+    }
+
+    async deleteClient(clientId: number, userId: number) {
+        // Busca o cliente garantindo que ele pertença ao usuário logado
+        const client = await this.clientRepo.findOne({
+            where: { id: clientId, user: { id: userId } },
+            relations: ["schedules"],
+        });
+
+        if (!client) {
+            throw new Error(
+                "Cliente não encontrado ou você não tem permissão para excluí-lo.",
+            );
+        }
+
+        if (client.schedules && client.schedules.length > 0) {
+            throw new Error(
+                "Este cliente possui agendamentos vinculados e não pode ser excluído.",
+            );
+        }
+
+        // Remove o registro do banco
+        return await this.clientRepo.remove(client);
     }
 }
