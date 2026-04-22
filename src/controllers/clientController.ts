@@ -6,12 +6,6 @@ const clientService = new ClientService();
 
 export const createClient = async (req: Request, res: Response) => {
     try {
-        // if (req.user?.role !== "admin") {
-        //     return res.status(403).json({
-        //         message: "Apenas administradores podem criar clientes",
-        //     });
-        // }
-
         const { name, phone, email } = req.body;
 
         const userId = req.user?.id;
@@ -29,5 +23,24 @@ export const createClient = async (req: Request, res: Response) => {
 
 export const getClients = async (req: Request, res: Response) => {
     const clients = await clientService.getClientsByUser(req.user!.id);
+
     res.json(clients);
+};
+
+export const updateClient = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params; // O ID do cliente vem da URL: /clients/:id
+        const { name, phone, email } = req.body;
+        const userId = req.user?.id;
+
+        const updatedClient = await clientService.updateClient(
+            Number(id),
+            userId!,
+            { name, phone, email },
+        );
+
+        res.json(updatedClient);
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
 };
