@@ -16,8 +16,18 @@ const router = Router();
 router.get("/all", authMiddleware, authorize("admin"), getAllClients);
 router.get("/", authMiddleware, getClientsByUser);
 router.get("/:id", authMiddleware, getClientDetails);
-router.post("/", authMiddleware, authorize("admin"), createClient);
-router.put("/:id", authMiddleware, authorize("admin"), updateClient);
-router.delete("/:id", authMiddleware, authorize("admin"), deleteClient);
+router.post("/", authMiddleware, authorize("admin", "employee"), createClient);
+router.put(
+    "/:id",
+    authMiddleware,
+    authorize("admin", "employee"),
+    updateClient,
+);
+router.delete(
+    "/:id",
+    authMiddleware,
+    authorize("admin", "employee"),
+    deleteClient,
+);
 
 export default router;

@@ -1,7 +1,7 @@
 import { AppDataSource } from "../config/data-source";
 import { Client } from "../entities/Client";
 
-import { User } from "../entities/User";
+import { User, UserRole } from "../entities/User";
 
 export class ClientService {
     private clientRepo = AppDataSource.getRepository(Client);
@@ -42,9 +42,12 @@ export class ClientService {
         return await this.clientRepo.find();
     }
 
-    async getClientsByUser(userId: number) {
+    async getClientsByUser(userId: number, userRole: UserRole) {
+        const whereCondition =
+            userRole === UserRole.ADMIN ? {} : { user: { id: userId } };
+
         return await this.clientRepo.find({
-            where: { user: { id: userId } },
+            where: whereCondition,
         });
     }
 
@@ -66,14 +69,23 @@ export class ClientService {
         return client;
     }
 
-    async updateClient(clientId: number, userId: number, data: any) {
-        const client = await this.clientRepo.findOne({
-            where: { id: clientId, user: { id: userId } },
-        });
+    async updateClient(
+        clientId: number,
+        userId: number,
+        data: any,
+        userRole: UserRole,
+    ) {
+        // Condição: Admin vê tudo | Employee vê apenas o dele
+        const whereCondition =
+            userRole === UserRole.ADMIN
+                ? { id: clientId }
+                : { id: clientId, user: { id: userId } };
+
+        const client = await this.clientRepo.findOne({ where: whereCondition });
 
         if (!client) {
             throw new Error(
-                "Cliente não encontrado ou você não tem permissão.",
+                "Cliente não encontrado ou sem permissão para editar.",
             );
         }
 
@@ -103,10 +115,15 @@ export class ClientService {
         return await this.clientRepo.save(client);
     }
 
-    async deleteClient(clientId: number, userId: number) {
+    async deleteClient(clientId: number, userId: number, userRole: UserRole) {
+        const whereCondition =
+            userRole === UserRole.ADMIN
+                ? { id: clientId }
+                : { id: clientId, user: { id: userId } };
+
         // Busca o cliente garantindo que ele pertença ao usuário logado
         const client = await this.clientRepo.findOne({
-            where: { id: clientId, user: { id: userId } },
+            where: whereCondition,
             relations: ["schedules"],
         });
 
@@ -120,6 +137,11 @@ export class ClientService {
             throw new Error(
                 "Este cliente possui agendamentos vinculados e não pode ser excluído.",
             );
+
+            // exemplo de erro para mudar depois
+            // return res.status(409).json({
+            //     message: "Cliente possui agendamentos e não pode ser removido.",
+            // });
         }
 
         // Remove o registro do banco

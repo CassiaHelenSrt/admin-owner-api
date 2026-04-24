@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { ClientService } from "../services/clientService";
+import { UserRole } from "../entities/User";
 
 const clientService = new ClientService();
 
@@ -33,6 +34,7 @@ export const getAllClients = async (req: Request, res: Response) => {
 export const getClientsByUser = async (req: Request, res: Response) => {
     try {
         const userId = req.user?.id;
+        const userRole = req.user?.role as UserRole;
 
         if (!userId) {
             return res
@@ -40,7 +42,7 @@ export const getClientsByUser = async (req: Request, res: Response) => {
                 .json({ message: "Usuário não autenticado." });
         }
 
-        const clients = await clientService.getClientsByUser(userId);
+        const clients = await clientService.getClientsByUser(userId, userRole);
 
         res.json(clients);
     } catch (error: any) {
@@ -66,11 +68,13 @@ export const updateClient = async (req: Request, res: Response) => {
         const { id } = req.params; // O ID do cliente vem da URL: /clients/:id
         const { name, phone, email } = req.body;
         const userId = req.user?.id;
+        const userRole = req.user?.role as UserRole; // Captura o cargo do usuário
 
         const updatedClient = await clientService.updateClient(
             Number(id),
             userId!,
             { name, phone, email },
+            userRole,
         );
 
         res.json(updatedClient);
@@ -83,9 +87,10 @@ export const deleteClient = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const userId = req.user?.id; // Pegando o ID de quem está logado
+        const userRole = req.user?.role as UserRole; // Captura o cargo do usuário
 
         // Passamos os dois IDs para o service conferir
-        await clientService.deleteClient(Number(id), userId!);
+        await clientService.deleteClient(Number(id), userId!, userRole);
 
         res.status(204).send();
     } catch (error: any) {
