@@ -28,15 +28,21 @@ export const authMiddleware = (
     }
 
     try {
-        const decoded = jwt.verify(token, SECRET_KEY!) as {
+        const decoded: any = jwt.verify(token, SECRET_KEY!) as {
             id: number;
             role: string;
         };
 
+        const agora = Math.floor(Date.now() / 1000);
+        const expiracao = decoded.exp; // Corrigido para .exp
+
+        console.log(
+            `Agora: ${agora} | Expira em: ${expiracao} | Faltam: ${expiracao - agora}s`,
+        );
         req.user = decoded;
 
         return next();
-    } catch (error) {
+    } catch (error: any) {
         return res.status(401).json({ message: "Token inválido" });
     }
 };
