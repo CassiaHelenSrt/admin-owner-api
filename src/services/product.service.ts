@@ -1,6 +1,6 @@
 import { AppDataSource } from "../config/data-source";
 import { Product } from "../entities/Product";
-import { User } from "../entities/User";
+import { User, UserRole } from "../entities/User";
 
 export class ProductService {
     private productRepo = AppDataSource.getRepository(Product);
@@ -21,5 +21,13 @@ export class ProductService {
         });
 
         return this.productRepo.save(product);
+    }
+
+    async getProductByUser(userId: number, userRole: UserRole) {
+        const isAdmin = userRole === UserRole.ADMIN;
+
+        return this.productRepo.find({
+            where: isAdmin ? {} : { user: { id: userId } },
+        });
     }
 }

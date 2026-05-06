@@ -98,7 +98,7 @@ export class AuthService {
             { id: user!.id, role: user!.role },
             SECRET_KEY!,
             {
-                expiresIn: "1m",
+                expiresIn: "15m",
             },
         );
 
