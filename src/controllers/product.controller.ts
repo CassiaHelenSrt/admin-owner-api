@@ -59,3 +59,19 @@ export const updateProduct = async (req: Request, res: Response) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+export const deleteProduct = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user?.id; // Pegando o ID de quem está logado
+        const userRole = req.user?.role as UserRole; // Captura o cargo do usuário
+
+        // Passamos os dois IDs para o service conferir
+        await productService.deleteProduct(Number(id), userId!, userRole);
+
+        res.status(204).send();
+    } catch (error: any) {
+        // Corrigido para .message
+        res.status(400).json({ message: error.message });
+    }
+};

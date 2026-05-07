@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
     createProduct,
+    deleteProduct,
     getProductByUser,
     updateProduct,
 } from "../controllers/product.controller";
@@ -17,6 +18,13 @@ router.put(
     authMiddleware,
     authorize("admin", "employee"),
     updateProduct,
+);
+
+router.delete(
+    "/:id",
+    authMiddleware,
+    authorize("admin", "employee"),
+    deleteProduct,
 );
 
 export default router;

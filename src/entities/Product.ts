@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    OneToMany,
+} from "typeorm";
 import { User } from "./User";
+import { Schedule } from "./Schedule";
 
 @Entity("products")
 export class Product {
@@ -26,4 +33,7 @@ export class Product {
         onDelete: "CASCADE",
     })
     user!: User;
+
+    @OneToMany(() => Schedule, (schedule) => schedule.product)
+    schedules!: Schedule[];
 }

@@ -81,4 +81,34 @@ export class ProductService {
 
         return await this.productRepo.save(product);
     }
+
+    async deleteProduct(productId: number, userId: number, userRole: UserRole) {
+        // Admin vê tudo | Employee só os dele
+        const whereCondition =
+            userRole === UserRole.ADMIN
+                ? { id: productId }
+                : { id: productId, user: { id: userId } };
+
+        // Busca o produto
+        const product = await this.productRepo.findOne({
+            where: whereCondition,
+            relations: ["schedules"],
+        });
+
+        if (!product) {
+            throw new Error(
+                "Produto não encontrado ou você não tem permissão para excluí-lo.",
+            );
+        }
+
+        // Verifica vínculos
+        if (product.schedules && product.schedules.length > 0) {
+            throw new Error(
+                "Este produto possui agendamentos vinculados e não pode ser excluído.",
+            );
+        }
+
+        // Remove do banco
+        return await this.productRepo.remove(product);
+    }
 }
