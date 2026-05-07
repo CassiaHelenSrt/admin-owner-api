@@ -30,4 +30,55 @@ export class ProductService {
             where: isAdmin ? {} : { user: { id: userId } },
         });
     }
+
+    async updateProduct(
+        productId: number,
+        userId: number,
+        data: any,
+        userRole: UserRole,
+    ) {
+        // Admin vê tudo | Employee só os dele
+        const whereCondition =
+            userRole === UserRole.ADMIN
+                ? { id: productId }
+                : { id: productId, user: { id: userId } };
+
+        const product = await this.productRepo.findOne({
+            where: whereCondition,
+        });
+
+        if (!product) {
+            throw new Error(
+                "Produto não encontrado ou sem permissão para editar.",
+            );
+        }
+
+        // Exemplo: validar nome duplicado
+        if (data.name) {
+            const name = data.name.trim();
+
+            const productExists = await this.productRepo.findOne({
+                where: {
+                    name,
+                    user: { id: userId },
+                },
+            });
+
+            if (productExists && productExists.id !== productId) {
+                throw new Error("Já existe outro produto com esse nome.");
+            }
+
+            data.name = name;
+        }
+
+        // Segurança
+        delete data.id;
+        delete data.user;
+        delete data.userId;
+
+        // Atualiza os dados
+        this.productRepo.merge(product, data);
+
+        return await this.productRepo.save(product);
+    }
 }
