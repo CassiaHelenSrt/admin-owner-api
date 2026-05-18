@@ -4,9 +4,9 @@ import cors from "cors";
 
 import express from "express";
 import clientRoutes from "./routes/client.routes";
-import authRoutes from "./routes/auth.router";
-import productRoute from "./routes/product.routes";
-import createSchedule from "./routes/schedule.router";
+import authRoutes from "./routes/auth.routes";
+import productRoutes from "./routes/product.routes";
+import scheduleRoutes from "./routes/schedule.routes";
 import { AppDataSource } from "./config/data-source";
 import availabilityRoutes from "./routes/availability.routes";
 
@@ -17,10 +17,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use(authRoutes);
-
 app.use("/client", clientRoutes);
-app.use("/product", productRoute);
-app.use("/schedules", createSchedule);
+app.use("/product", productRoutes);
+app.use("/schedules", scheduleRoutes);
 app.use("/availability", availabilityRoutes);
 
 AppDataSource.initialize()

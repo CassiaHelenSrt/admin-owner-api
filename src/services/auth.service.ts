@@ -66,6 +66,11 @@ export class AuthService {
         };
     }
 
+    async getAllUsers() {
+        // Retorna todos os users cadastrados no sistema global
+        return await this.repo.find();
+    }
+
     async refresh(tokenEnviado: string) {
         // 1. Busca o Refresh Token no banco
         const refreshToken = await this.refreshTokenRepo.findOne({

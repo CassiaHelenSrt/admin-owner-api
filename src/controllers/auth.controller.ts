@@ -16,6 +16,15 @@ export const login = async (req: Request, res: Response) => {
     }
 };
 
+export const getUsers = async (req: Request, res: Response) => {
+    try {
+        const users = await authService.getAllUsers();
+        res.json(users);
+    } catch (error: any) {
+        res.status(500).json({ message: "Erro ao buscar todos usuários." });
+    }
+};
+
 export const handleRefresh = async (req: Request, res: Response) => {
     try {
         const { refreshToken } = req.body;
