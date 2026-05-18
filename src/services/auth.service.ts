@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { AppDataSource } from "../config/data-source";
-import { User } from "../entities/User";
+import { User, UserRole } from "../entities/User";
 import { RefreshToken } from "../entities/RefreshToken";
 import dayjs from "dayjs";
 
@@ -121,6 +121,34 @@ export class AuthService {
         return {
             token: newToken,
             refreshToken: newRefreshToken.token,
+        };
+    }
+
+    async deleteUser(targetUserId: number, actorUserId: number) {
+        if (targetUserId === actorUserId) {
+            throw new Error("Você não pode excluir a sua própria conta.");
+        }
+
+        const user = await this.repo.findOne({
+            where: { id: targetUserId },
+            relations: ["schedules"],
+        });
+
+        if (!user) {
+            throw new Error("Usuário não encontrado.");
+        }
+
+        if (user.schedules && user.schedules.length > 0) {
+            throw new Error(
+                "Este usuário possui agendamentos vinculados e não pode ser excluído.",
+            );
+        }
+
+        await this.repo.remove(user);
+
+        return {
+            success: true,
+            message: `Usuário ${user.name || ""} foi excluído com sucesso.`,
         };
     }
 

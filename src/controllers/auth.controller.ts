@@ -25,6 +25,23 @@ export const getUsers = async (req: Request, res: Response) => {
     }
 };
 
+export const createUser = async (req: Request, res: Response) => {
+    try {
+        // if (req.user?.role !== "admin") {
+        //     return res.status(403).json({
+        //         message: "Apenas administradores podem criar usuário",
+        //     });
+        // }
+        const { name, email, password } = req.body;
+
+        const user = await authService.createUser(name, email, password);
+
+        return res.status(201).json(user);
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 export const handleRefresh = async (req: Request, res: Response) => {
     try {
         const { refreshToken } = req.body;
@@ -45,19 +62,17 @@ export const handleRefresh = async (req: Request, res: Response) => {
     }
 };
 
-export const createUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: Request, res: Response) => {
     try {
-        // if (req.user?.role !== "admin") {
-        //     return res.status(403).json({
-        //         message: "Apenas administradores podem criar usuário",
-        //     });
-        // }
-        const { name, email, password } = req.body;
+        const { id } = req.params;
+        const userId = req.user?.id; // Pegando o ID de quem está logado
 
-        const user = await authService.createUser(name, email, password);
+        // Passamos os dois IDs para o service conferir
+        await authService.deleteUser(Number(id), userId!);
 
-        return res.status(201).json(user);
+        res.status(204).send();
     } catch (error: any) {
+        // Corrigido para .message
         res.status(400).json({ message: error.message });
     }
 };
