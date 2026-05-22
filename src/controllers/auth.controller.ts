@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
+import { UserRole } from "../entities/User";
 
 const authService = new AuthService();
 
@@ -37,6 +38,26 @@ export const createUser = async (req: Request, res: Response) => {
         const user = await authService.createUser(name, email, password);
 
         return res.status(201).json(user);
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+export const updateEmployee = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params; // ID do funcionário que será atualizado: /employees/:id
+        const { name, phone, email } = req.body; // Dados permitidos para alteração
+        const currentUserId = req.user?.id; // ID do usuário logado que faz a requisição
+        const userRole = req.user?.role as UserRole; // Cargo do usuário logado
+
+        const updatedEmployee = await authService.updateEmployee(
+            Number(id),
+            currentUserId!,
+            { name, phone, email },
+            userRole,
+        );
+
+        res.json(updatedEmployee);
     } catch (error: any) {
         res.status(400).json({ message: error.message });
     }

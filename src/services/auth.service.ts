@@ -71,6 +71,44 @@ export class AuthService {
         return await this.repo.find();
     }
 
+    //atualizar colaboradores
+    async updateEmployee(
+        employeeId: number,
+        currentUserId: number,
+        data: any,
+        userRole: UserRole,
+    ) {
+        if (userRole !== UserRole.ADMIN && employeeId !== currentUserId) {
+            throw new Error("Você não tem permissão para editar este perfil.");
+        }
+
+        const employee = await this.repo.findOne({ where: { id: employeeId } });
+
+        if (!employee) {
+            throw new Error("Funcionário não encontrado.");
+        }
+
+        if (data.email) {
+            const email = data.email.toLowerCase().trim();
+            const emailExistente = await this.repo.findOne({
+                where: { email },
+            });
+
+            if (emailExistente && emailExistente.id !== employeeId) {
+                throw new Error(
+                    "Este e-mail já está cadastrado em outro usuário.",
+                );
+            }
+
+            data.email = email;
+        }
+
+        delete data.role;
+
+        this.repo.merge(employee, data);
+        return await this.repo.save(employee);
+    }
+
     async refresh(tokenEnviado: string) {
         // 1. Busca o Refresh Token no banco
         const refreshToken = await this.refreshTokenRepo.findOne({
