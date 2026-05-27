@@ -112,4 +112,57 @@ export class ScheduleService {
             return await manager.save(schedule);
         });
     }
+
+    async getSchedulesByDate(userId: number, date: string) {
+        const schedules = await this.scheduleRepo
+            .createQueryBuilder("schedule")
+            .leftJoinAndSelect("schedule.client", "client")
+            .leftJoinAndSelect("schedule.product", "product")
+            .where("schedule.userId = :userId", { userId })
+            .andWhere("DATE(schedule.startTime) = :date", { date })
+            .orderBy("schedule.startTime", "ASC")
+            .getMany();
+
+        // Organiza os agendamentos por períodos para combinar com seu layout
+        const formattedResponse = {
+            manha: schedules.filter(
+                (s) => new Date(s.startTime).getHours() < 12,
+            ),
+            tarde: schedules.filter((s) => {
+                const hr = new Date(s.startTime).getHours();
+                return hr >= 12 && hr < 18;
+            }),
+            noite: schedules.filter(
+                (s) => new Date(s.startTime).getHours() >= 18,
+            ),
+            todos: schedules, // Lista linear para usar na seção "Agendamentos do Dia"
+        };
+
+        return formattedResponse;
+    }
+
+    async getSchedulesByMonth(userId: number, year: number, month: number) {
+        // Cria a data inicial do mês (ex: 2026-05-01)
+        const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+
+        // Cria a data final pegando o dia "0" do mês seguinte (o que retorna o último dia do mês atual)
+        const lastDay = new Date(year, month, 0).getDate();
+        const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+        return await this.scheduleRepo
+            .createQueryBuilder("schedule")
+            .leftJoinAndSelect("schedule.client", "client")
+            .leftJoinAndSelect("schedule.product", "product")
+            .where("schedule.userId = :userId", { userId })
+            // Filtra pelo intervalo de datas (começo ao fim do mês)
+            .andWhere(
+                "DATE(schedule.startTime) BETWEEN :startDate AND :endDate",
+                {
+                    startDate,
+                    endDate,
+                },
+            )
+            .orderBy("schedule.startTime", "ASC")
+            .getMany();
+    }
 }

@@ -33,3 +33,53 @@ export const createSchedule = async (req: AuthRequest, res: Response) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+export const getDailySchedules = async (req: AuthRequest, res: Response) => {
+    try {
+        // 🔥 CORRETO PARA PRODUÇÃO: Pega o ID diretamente do token decodificado no seu Middleware de Autenticação
+        console.log("-> Rota GET /schedules/day acionada!");
+        console.log("Query recebida:", req.query);
+        const userId = req.user?.id;
+
+        const date = req.query.date as string; // Continua vindo da URL (ex: ?date=2026-05-27)
+
+        if (!userId || !date) {
+            return res.status(400).json({
+                error: "Usuário não autenticado ou data não fornecida",
+            });
+        }
+
+        const service = new ScheduleService();
+        const dailyData = await service.getSchedulesByDate(userId, date);
+
+        return res.json(dailyData);
+    } catch (error: any) {
+        console.error("Erro interno na Controller:", error);
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+export const getMonthlySchedules = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.id || Number(req.query.userId); // Mantém suporte a teste rápido se necessário
+        const year = Number(req.query.year);
+        const month = Number(req.query.month); // Espera número de 1 a 12
+
+        if (!userId || !year || !month) {
+            return res
+                .status(400)
+                .json({ error: "userId, year e month são obrigatórios" });
+        }
+
+        const service = new ScheduleService();
+        const monthlyData = await service.getSchedulesByMonth(
+            userId,
+            year,
+            month,
+        );
+
+        return res.json(monthlyData);
+    } catch (error: any) {
+        return res.status(500).json({ error: error.message });
+    }
+};
