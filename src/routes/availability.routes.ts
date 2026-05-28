@@ -12,7 +12,7 @@ const router = Router();
 router.post("/", authMiddleware, createAvailability);
 
 //horários disponíveis (por data)
-router.get("/available/slots", authMiddleware, getAvailableSlots);
+router.get("/available/slots/:productId", authMiddleware, getAvailableSlots);
 
 // buscar disponibilidades do usuário
 router.get("/:userId", authMiddleware, getAvailability);

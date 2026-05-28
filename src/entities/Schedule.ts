@@ -22,4 +22,11 @@ export class Schedule {
 
     @Column()
     endTime!: Date;
+
+    @Column({
+        type: "varchar",
+        length: 20,
+        default: "pending", // Agora nasce como pendente por padrão
+    })
+    status!: "pending" | "confirmed" | "finished" | "canceled";
 }
