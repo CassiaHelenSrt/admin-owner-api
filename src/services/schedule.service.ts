@@ -113,13 +113,21 @@ export class ScheduleService {
         });
     }
 
-    async getSchedulesByDate(userId: number, date: string) {
-        const schedules = await this.scheduleRepo
+    async getSchedulesByDate(userId: number, date: string, productId?: number) {
+        const query = await this.scheduleRepo
             .createQueryBuilder("schedule")
             .leftJoinAndSelect("schedule.client", "client")
             .leftJoinAndSelect("schedule.product", "product")
             .where("schedule.userId = :userId", { userId })
             .andWhere("DATE(schedule.startTime) = :date", { date })
+            .orderBy("schedule.startTime", "ASC");
+
+        // 🔥 NOVO: Se o profissional passou um ID de produto no filtro, restringe a busca no banco
+        if (productId) {
+            query.andWhere("product.id = :productId", { productId });
+        }
+
+        const schedules = await query
             .orderBy("schedule.startTime", "ASC")
             .getMany();
 

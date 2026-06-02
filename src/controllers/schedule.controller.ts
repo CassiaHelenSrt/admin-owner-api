@@ -37,10 +37,8 @@ export const createSchedule = async (req: AuthRequest, res: Response) => {
 export const getDailySchedules = async (req: AuthRequest, res: Response) => {
     try {
         // 🔥 CORRETO PARA PRODUÇÃO: Pega o ID diretamente do token decodificado no seu Middleware de Autenticação
-        console.log("-> Rota GET /schedules/day acionada!");
-        console.log("Query recebida:", req.query);
-        const userId = req.user?.id;
 
+        const userId = req.user?.id;
         const date = req.query.date as string; // Continua vindo da URL (ex: ?date=2026-05-27)
 
         if (!userId || !date) {
