@@ -3,21 +3,62 @@ import { Request, Response } from "express";
 import { ClientService } from "../services/clientService";
 import { UserRole } from "../entities/User";
 
+import path from "path";
+import * as fs from "fs";
+
 const clientService = new ClientService();
+
+// export const createClient = async (req: Request, res: Response) => {
+//     try {
+//         const { name, phone, email } = req.body;
+
+//         const userId = req.user?.id;
+
+//         const client = await clientService.createClient(
+//             { name, phone, email },
+//             userId!,
+//         );
+
+//         res.status(201).json(client);
+//     } catch (error: any) {
+//         res.status(400).json({ message: error.message });
+//     }
+// };
 
 export const createClient = async (req: Request, res: Response) => {
     try {
-        const { name, phone, email } = req.body;
+        const bodySanitizado: any = {};
 
+        for (const key in req.body) {
+            bodySanitizado[key.trim()] = req.body[key];
+        }
+
+        const { name, phone, email } = bodySanitizado;
         const userId = req.user?.id;
 
-        const client = await clientService.createClient(
-            { name, phone, email },
-            userId!,
-        );
+        const clientData: any = { name, phone, email };
 
+        if (req.file) {
+            clientData.photo = `uploads/clients/${req.file.filename}`;
+        }
+
+        const client = await clientService.createClient(clientData, userId!);
         res.status(201).json(client);
     } catch (error: any) {
+        // SE DEU ERRO e o Multer já tinha salvado um arquivo, nós apagamos ele aqui!
+
+        if (req.file) {
+            const caminhoDoArquivo = path.resolve(
+                __dirname,
+                `../../uploads/clients/${req.file.filename}`,
+            );
+
+            // Verifica se o arquivo realmente existe na pasta antes de apagar
+            if (fs.existsSync(caminhoDoArquivo)) {
+                fs.unlinkSync(caminhoDoArquivo); // Apaga a foto do computador
+            }
+        }
+
         res.status(400).json({ message: error.message });
     }
 };
@@ -70,10 +111,18 @@ export const updateClient = async (req: Request, res: Response) => {
         const userId = req.user?.id;
         const userRole = req.user?.role as UserRole; // Captura o cargo do usuário
 
+        // 1. Cria um objeto com os dados de texto
+        const updateData: any = { name, phone, email };
+
+        // 2. SE o usuário enviou uma nova foto, adiciona o caminho dela
+        if (req.file) {
+            updateData.photo = `uploads/${req.file.filename}`;
+        }
+
         const updatedClient = await clientService.updateClient(
             Number(id),
             userId!,
-            { name, phone, email },
+            updateData, // Enviando o objeto modificado
             userRole,
         );
 

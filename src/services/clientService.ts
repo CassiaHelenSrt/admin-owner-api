@@ -1,3 +1,6 @@
+import * as fs from "fs";
+import * as path from "path";
+
 import { AppDataSource } from "../config/data-source";
 import { Client } from "../entities/Client";
 
@@ -144,6 +147,13 @@ export class ClientService {
             // });
         }
 
+        // NOVO: Apaga a foto do servidor se ela existir
+        if (client.photo) {
+            const filePath = path.resolve(client.photo);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
         // Remove o registro do banco
         return await this.clientRepo.remove(client);
     }

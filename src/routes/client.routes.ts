@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { createUploadMiddleware } from "../config/multer";
+
 import {
     createClient,
     deleteClient,
@@ -13,10 +15,18 @@ import { authorize } from "../middlewares/isAdmin";
 
 const router = Router();
 
+const uploadClientPhoto = createUploadMiddleware("clients");
+
 router.get("/all", authMiddleware, authorize("admin"), getAllClients);
 router.get("/", authMiddleware, getClientsByUser);
 router.get("/:id", authMiddleware, getClientDetails);
-router.post("/", authMiddleware, authorize("admin", "employee"), createClient);
+router.post(
+    "/",
+    uploadClientPhoto,
+    authMiddleware,
+    authorize("admin", "employee"),
+    createClient,
+);
 router.put(
     "/:id",
     authMiddleware,

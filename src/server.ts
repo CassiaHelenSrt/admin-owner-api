@@ -9,12 +9,15 @@ import productRoutes from "./routes/product.routes";
 import scheduleRoutes from "./routes/schedule.routes";
 import { AppDataSource } from "./config/data-source";
 import availabilityRoutes from "./routes/availability.routes";
+import path from "path";
 
 const app = express();
 
 app.use(cors());
 
 app.use(express.json());
+
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use(authRoutes);
 app.use("/client", clientRoutes);

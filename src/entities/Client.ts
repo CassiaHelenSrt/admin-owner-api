@@ -24,6 +24,9 @@ export class Client {
     @Column()
     phone!: string;
 
+    @Column({ nullable: true })
+    photo!: string;
+
     @ManyToOne(() => User, (user) => user.clients)
     user!: User;
 
