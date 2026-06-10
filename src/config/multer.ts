@@ -31,17 +31,3 @@ export const createUploadMiddleware = (folderName: string) => {
     // O nome do campo no Insomnia/Front-end sempre será 'photo'
     return multer({ storage }).single("photo");
 };
-
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => {
-//         // Encontra a pasta uploads na raiz do projeto
-//         cb(null, path.resolve(__dirname, "../../uploads/clients"));
-//     },
-//     filename: (req, file, cb) => {
-//         // Cria um nome seguro com número aleatório + extensão (.jpg, .png)
-//         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//         cb(null, uniqueSuffix + path.extname(file.originalname));
-//     },
-// });
-
-// const upload = multer({ storage: storage });

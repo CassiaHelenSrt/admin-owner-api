@@ -106,28 +106,66 @@ export const getClientDetails = async (req: Request, res: Response) => {
 
 export const updateClient = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params; // O ID do cliente vem da URL: /clients/:id
-        const { name, phone, email } = req.body;
+        const { id } = req.params;
         const userId = req.user?.id;
-        const userRole = req.user?.role as UserRole; // Captura o cargo do usuário
+        const userRole = req.user?.role as UserRole;
 
-        // 1. Cria um objeto com os dados de texto
+        // 1. Remove os espaços fantasmas das chaves do body enviado
+        const bodySanitizado: any = {};
+        for (const key in req.body) {
+            bodySanitizado[key.trim()] = req.body[key];
+        }
+        const { name, phone, email } = bodySanitizado;
+
         const updateData: any = { name, phone, email };
 
-        // 2. SE o usuário enviou uma nova foto, adiciona o caminho dela
+        // 2. Se o usuário enviou uma nova foto, precisamos descobrir qual era a antiga ANTES de atualizar
+        let fotoAntigaParaDeletar: string | null = null;
         if (req.file) {
-            updateData.photo = `uploads/${req.file.filename}`;
+            updateData.photo = `uploads/clients/${req.file.filename}`;
+
+            // Buscamos o cliente atual no banco para descobrir o caminho da foto antiga dele
+            const clienteAtual = await clientService.getClientById(
+                Number(id),
+                userId!,
+            );
+            if (clienteAtual && clienteAtual.photo) {
+                fotoAntigaParaDeletar = clienteAtual.photo; // Guarda o caminho da foto velha
+            }
         }
 
+        // 3. Tenta atualizar o cliente no banco de dados
         const updatedClient = await clientService.updateClient(
             Number(id),
             userId!,
-            updateData, // Enviando o objeto modificado
+            updateData,
             userRole,
         );
 
+        // 4. SE DEU CERTO a atualização E o cliente trocou de foto, agora podemos apagar a foto antiga com segurança
+        if (fotoAntigaParaDeletar) {
+            const caminhoFotoVelha = path.resolve(
+                __dirname,
+                `../../${fotoAntigaParaDeletar}`,
+            );
+            if (fs.existsSync(caminhoFotoVelha)) {
+                fs.unlinkSync(caminhoFotoVelha); // Tchau, foto antiga!
+            }
+        }
+
         res.json(updatedClient);
     } catch (error: any) {
+        // 5. SE DEU ERRO (ex: e-mail repetido) e o Multer já tinha salvado a nova foto, nós apagamos ela
+        if (req.file) {
+            const caminhoNovaFoto = path.resolve(
+                __dirname,
+                `../../uploads/clients/${req.file.filename}`,
+            );
+            if (fs.existsSync(caminhoNovaFoto)) {
+                fs.unlinkSync(caminhoNovaFoto); // Apaga a foto nova porque a atualização falhou
+            }
+        }
+
         res.status(400).json({ message: error.message });
     }
 };
