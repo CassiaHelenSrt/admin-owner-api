@@ -28,6 +28,9 @@ export class Product {
     @Column({ nullable: true })
     description?: string;
 
+    @Column({ nullable: true })
+    photo!: string;
+
     @ManyToOne(() => User, (user) => user.products, {
         nullable: false,
         onDelete: "CASCADE",

@@ -2,21 +2,47 @@ import { Request, Response } from "express";
 import { ProductService } from "../services/product.service";
 import { UserRole } from "../entities/User";
 
+import * as fs from "fs";
+import * as path from "path";
+
 const productService = new ProductService();
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const { name, type, price, duration, description } = req.body;
+        // 1. Remove os espaços fantasmas das chaves do body enviado
+        const bodySanitizado: any = {};
+        for (const key in req.body) {
+            bodySanitizado[key.trim()] = req.body[key];
+        }
 
+        const { name, type, price, duration, description } = bodySanitizado;
         const userId = req.user?.id;
 
+        // Monta o objeto base com os textos recebidos
+        const productData: any = { name, type, price, duration, description };
+
+        // 2. SE o Multer interceptou a foto do produto, adiciona o caminho
+        if (req.file) {
+            productData.photo = `uploads/products/${req.file.filename}`;
+        }
+
+        // 3. Tenta salvar no banco de dados
         const product = await productService.createProduct(
-            { name, type, price, duration, description },
+            productData,
             userId!,
         );
-
         res.status(201).json(product);
     } catch (error: any) {
+        //REDE DE SEGURANÇA: Se deu erro (ex: validação falhou), apaga a foto nova da pasta
+        if (req.file) {
+            const caminhoNovaFoto = path.resolve(
+                __dirname,
+                `../../uploads/products/${req.file.filename}`,
+            );
+            if (fs.existsSync(caminhoNovaFoto)) {
+                fs.unlinkSync(caminhoNovaFoto);
+            }
+        }
         res.status(400).json({ message: error.message });
     }
 };
@@ -42,20 +68,44 @@ export const getProductByUser = async (req: Request, res: Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params; // O ID do cliente vem da URL: /clients/:id
-        const { name, type, price, duration, description } = req.body;
+        const { id } = req.params;
         const userId = req.user?.id;
-        const userRole = req.user?.role as UserRole; // Captura o cargo do usuário
+        const userRole = req.user?.role as UserRole;
 
-        const updateProduct = await productService.updateProduct(
+        // 1. Remove os espaços fantasmas das chaves do body enviado
+        const bodySanitizado: any = {};
+        for (const key in req.body) {
+            bodySanitizado[key.trim()] = req.body[key];
+        }
+        const { name, type, price, duration, description } = bodySanitizado;
+
+        const updateData: any = { name, type, price, duration, description };
+
+        // Se o usuário mandou uma foto nova, coloca o caminho dela nos dados
+        if (req.file) {
+            updateData.photo = `uploads/products/${req.file.filename}`;
+        }
+
+        // Envia tudo direto para o Service resolver
+        const updatedProduct = await productService.updateProduct(
             Number(id),
             userId!,
-            { name, type, price, duration, description },
+            updateData,
             userRole,
         );
 
-        res.json(updateProduct);
+        res.json(updatedProduct);
     } catch (error: any) {
+        // REDE DE SEGURANÇA: Se deu erro na atualização, joga fora a foto nova que o Multer criou
+        if (req.file) {
+            const NewPhotoPath = path.resolve(
+                __dirname,
+                `../../uploads/products/${req.file.filename}`,
+            );
+            if (fs.existsSync(NewPhotoPath)) {
+                fs.unlinkSync(NewPhotoPath);
+            }
+        }
         res.status(400).json({ message: error.message });
     }
 };
