@@ -110,12 +110,31 @@ export class ClientService {
             data.email = email;
         }
 
+        let fotoAntigaParaDeletar: string | null = null;
+        if (data.photo && client.photo) {
+            fotoAntigaParaDeletar = client.photo;
+        }
+
         delete data.id;
         delete data.user;
         delete data.userId;
 
         this.clientRepo.merge(client, data);
-        return await this.clientRepo.save(client);
+
+        const clientSaved = await this.clientRepo.save(client);
+
+        // 4. SE DEU CERTO a atualização E o cliente trocou de foto, agora podemos apagar a foto antiga com segurança
+        if (fotoAntigaParaDeletar) {
+            const caminhoFotoVelha = path.resolve(
+                __dirname,
+                `../../${fotoAntigaParaDeletar}`,
+            );
+            if (fs.existsSync(caminhoFotoVelha)) {
+                fs.unlinkSync(caminhoFotoVelha); // Tchau, foto antiga!
+            }
+        }
+
+        return clientSaved;
     }
 
     async deleteClient(clientId: number, userId: number, userRole: UserRole) {

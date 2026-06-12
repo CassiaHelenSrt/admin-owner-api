@@ -119,19 +119,8 @@ export const updateClient = async (req: Request, res: Response) => {
 
         const updateData: any = { name, phone, email };
 
-        // 2. Se o usuário enviou uma nova foto, precisamos descobrir qual era a antiga ANTES de atualizar
-        let fotoAntigaParaDeletar: string | null = null;
         if (req.file) {
-            updateData.photo = `uploads/clients/${req.file.filename}`;
-
-            // Buscamos o cliente atual no banco para descobrir o caminho da foto antiga dele
-            const clienteAtual = await clientService.getClientById(
-                Number(id),
-                userId!,
-            );
-            if (clienteAtual && clienteAtual.photo) {
-                fotoAntigaParaDeletar = clienteAtual.photo; // Guarda o caminho da foto velha
-            }
+            updateData.photo = `uploads/products/${req.file.filename}`;
         }
 
         // 3. Tenta atualizar o cliente no banco de dados
@@ -141,17 +130,6 @@ export const updateClient = async (req: Request, res: Response) => {
             updateData,
             userRole,
         );
-
-        // 4. SE DEU CERTO a atualização E o cliente trocou de foto, agora podemos apagar a foto antiga com segurança
-        if (fotoAntigaParaDeletar) {
-            const caminhoFotoVelha = path.resolve(
-                __dirname,
-                `../../${fotoAntigaParaDeletar}`,
-            );
-            if (fs.existsSync(caminhoFotoVelha)) {
-                fs.unlinkSync(caminhoFotoVelha); // Tchau, foto antiga!
-            }
-        }
 
         res.json(updatedClient);
     } catch (error: any) {
