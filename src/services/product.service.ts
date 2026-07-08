@@ -1,6 +1,7 @@
 import { AppDataSource } from "../config/data-source";
 import { Product } from "../entities/Product";
 import { User, UserRole } from "../entities/User";
+import { CreateProductDTO, UpdateProductDTO } from "../types/CreateProductDTO";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -9,7 +10,7 @@ export class ProductService {
     private productRepo = AppDataSource.getRepository(Product);
     private userRepo = AppDataSource.getRepository(User);
 
-    async createProduct(data: any, userId: number) {
+    async createProduct(data: CreateProductDTO, userId: number) {
         const user = await this.userRepo.findOne({
             where: { id: userId },
         });
@@ -61,7 +62,7 @@ export class ProductService {
     async updateProduct(
         productId: number,
         userId: number,
-        data: any,
+        data: UpdateProductDTO,
         userRole: UserRole,
     ) {
         // Admin vê tudo | Employee só os dele
@@ -105,11 +106,6 @@ export class ProductService {
         if (data.photo && product.photo) {
             fotoAntigaParaDeletar = product.photo;
         }
-
-        // Segurança
-        delete data.id;
-        delete data.user;
-        delete data.userId;
 
         // Atualiza os dados
         this.productRepo.merge(product, data);

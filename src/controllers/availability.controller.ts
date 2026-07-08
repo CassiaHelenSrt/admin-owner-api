@@ -1,15 +1,19 @@
 import { Request, Response } from "express";
 import { AvailabilityService } from "../services/availability.service";
+import { CreateAvailabilityDTO } from "../types/CreateAvailabilityDTO";
+import { getErrorMessage } from "../utils/errors";
 
 const service = new AvailabilityService();
 
 export const createAvailability = async (req: Request, res: Response) => {
     try {
-        const availability = await service.createAvailability(req.body);
+        const availability = await service.createAvailability(
+            req.body as CreateAvailabilityDTO,
+        );
 
         return res.status(201).json(availability);
-    } catch (error: any) {
-        return res.status(400).json({ message: error.message });
+    } catch (error) {
+        return res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -20,8 +24,8 @@ export const getAvailability = async (req: Request, res: Response) => {
         const data = await service.getUserAvailability(userId);
 
         return res.json(data);
-    } catch (error: any) {
-        return res.status(400).json({ message: error.message });
+    } catch (error) {
+        return res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -62,7 +66,7 @@ export const getAvailableSlots = async (req: Request, res: Response) => {
         );
 
         return res.json(data);
-    } catch (error: any) {
-        return res.status(400).json({ message: error.message });
+    } catch (error) {
+        return res.status(400).json({ message: getErrorMessage(error) });
     }
 };

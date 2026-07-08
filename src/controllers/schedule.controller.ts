@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { ScheduleService } from "../services/schedule.service";
+import { getErrorMessage } from "../utils/errors";
 
 interface AuthRequest extends Request {
     user?: { id: number; role: string };
@@ -29,8 +30,8 @@ export const createSchedule = async (req: AuthRequest, res: Response) => {
         console.log("controller", userId);
 
         return res.status(201).json(schedule);
-    } catch (error: any) {
-        res.status(400).json({ message: error.message });
+    } catch (error) {
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -51,9 +52,9 @@ export const getDailySchedules = async (req: AuthRequest, res: Response) => {
         const dailyData = await service.getSchedulesByDate(userId, date);
 
         return res.json(dailyData);
-    } catch (error: any) {
+    } catch (error) {
         console.error("Erro interno na Controller:", error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: getErrorMessage(error) });
     }
 };
 
@@ -77,7 +78,7 @@ export const getMonthlySchedules = async (req: AuthRequest, res: Response) => {
         );
 
         return res.json(monthlyData);
-    } catch (error: any) {
-        return res.status(500).json({ error: error.message });
+    } catch (error) {
+        return res.status(500).json({ error: getErrorMessage(error) });
     }
 };

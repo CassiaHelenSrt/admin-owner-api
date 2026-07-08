@@ -5,12 +5,13 @@ import { AppDataSource } from "../config/data-source";
 import { Client } from "../entities/Client";
 
 import { User, UserRole } from "../entities/User";
+import { CreateClientDTO, UpdateClientDTO } from "../types/CreateClientDTO";
 
 export class ClientService {
     private clientRepo = AppDataSource.getRepository(Client);
     private userRepo = AppDataSource.getRepository(User);
 
-    async createClient(data: any, userId: number) {
+    async createClient(data: CreateClientDTO, userId: number) {
         const user = await this.userRepo.findOne({
             where: { id: userId },
         });
@@ -75,7 +76,7 @@ export class ClientService {
     async updateClient(
         clientId: number,
         userId: number,
-        data: any,
+        data: UpdateClientDTO,
         userRole: UserRole,
     ) {
         // Condição: Admin vê tudo | Employee vê apenas o dele
@@ -114,10 +115,6 @@ export class ClientService {
         if (data.photo && client.photo) {
             fotoAntigaParaDeletar = client.photo;
         }
-
-        delete data.id;
-        delete data.user;
-        delete data.userId;
 
         this.clientRepo.merge(client, data);
 

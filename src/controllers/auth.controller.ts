@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
 import { UserRole } from "../entities/User";
+import { UpdateEmployeeDTO } from "../types/UpdateEmployeeDTO";
+import { getErrorMessage } from "../utils/errors";
 
 const authService = new AuthService();
 
@@ -12,8 +14,8 @@ export const login = async (req: Request, res: Response) => {
         console.log(result);
 
         return res.json(result);
-    } catch (error: any) {
-        res.status(401).json({ message: error.message });
+    } catch (error) {
+        res.status(401).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -21,7 +23,7 @@ export const getUsers = async (req: Request, res: Response) => {
     try {
         const users = await authService.getAllUsers();
         res.json(users);
-    } catch (error: any) {
+    } catch (error) {
         res.status(500).json({ message: "Erro ao buscar todos usuários." });
     }
 };
@@ -38,15 +40,15 @@ export const createUser = async (req: Request, res: Response) => {
         const user = await authService.createUser(name, email, password);
 
         return res.status(201).json(user);
-    } catch (error: any) {
-        res.status(400).json({ message: error.message });
+    } catch (error) {
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
 export const updateEmployee = async (req: Request, res: Response) => {
     try {
         const { id } = req.params; // ID do funcionário que será atualizado: /employees/:id
-        const { name, phone, email } = req.body; // Dados permitidos para alteração
+        const { name, phone, email }: UpdateEmployeeDTO = req.body; // Dados permitidos para alteração
         const currentUserId = req.user?.id; // ID do usuário logado que faz a requisição
         const userRole = req.user?.role as UserRole; // Cargo do usuário logado
 
@@ -58,8 +60,8 @@ export const updateEmployee = async (req: Request, res: Response) => {
         );
 
         res.json(updatedEmployee);
-    } catch (error: any) {
-        res.status(400).json({ message: error.message });
+    } catch (error) {
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -77,9 +79,9 @@ export const handleRefresh = async (req: Request, res: Response) => {
         const result = await authService.refresh(refreshToken);
 
         res.json(result);
-    } catch (error: any) {
+    } catch (error) {
         // Se o refresh token for inválido ou expirado, retorna 401 para o front deslogar o usuário
-        res.status(401).json({ message: error.message });
+        res.status(401).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -92,8 +94,7 @@ export const deleteUser = async (req: Request, res: Response) => {
         await authService.deleteUser(Number(id), userId!);
 
         res.status(204).send();
-    } catch (error: any) {
-        // Corrigido para .message
-        res.status(400).json({ message: error.message });
+    } catch (error) {
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };

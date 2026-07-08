@@ -1,9 +1,11 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { AppDataSource } from "../config/data-source";
 import { User, UserRole } from "../entities/User";
 import { RefreshToken } from "../entities/RefreshToken";
 import dayjs from "dayjs";
+import { UpdateEmployeeDTO } from "../types/UpdateEmployeeDTO";
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
@@ -53,7 +55,7 @@ export class AuthService {
 
         const refreshToken = this.refreshTokenRepo.create({
             userId: user.id,
-            token: Math.random().toString(36).substring(2) + Date.now(), // String aleatória única
+            token: randomBytes(40).toString("hex"),
             expiresIn,
         });
 
@@ -75,7 +77,7 @@ export class AuthService {
     async updateEmployee(
         employeeId: number,
         currentUserId: number,
-        data: any,
+        data: UpdateEmployeeDTO,
         userRole: UserRole,
     ) {
         if (userRole !== UserRole.ADMIN && employeeId !== currentUserId) {
@@ -102,8 +104,6 @@ export class AuthService {
 
             data.email = email;
         }
-
-        delete data.role;
 
         this.repo.merge(employee, data);
         return await this.repo.save(employee);
@@ -149,7 +149,7 @@ export class AuthService {
         const newExpiresIn = dayjs().add(7, "days").unix();
         const newRefreshToken = this.refreshTokenRepo.create({
             userId: user!.id,
-            token: Math.random().toString(36).substring(2) + Date.now(),
+            token: randomBytes(40).toString("hex"),
             expiresIn: newExpiresIn,
         });
 

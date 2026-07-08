@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 
 import jwt from "jsonwebtoken";
+import { AuthTokenPayload } from "../types/AuthTokenPayload";
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
@@ -28,21 +29,12 @@ export const authMiddleware = (
     }
 
     try {
-        const decoded: any = jwt.verify(token, SECRET_KEY!) as {
-            id: number;
-            role: string;
-        };
+        const decoded = jwt.verify(token, SECRET_KEY!) as AuthTokenPayload;
 
-        const agora = Math.floor(Date.now() / 1000);
-        const expiracao = decoded.exp; // Corrigido para .exp
-
-        console.log(
-            `Agora: ${agora} | Expira em: ${expiracao} | Faltam: ${expiracao - agora}s`,
-        );
         req.user = decoded;
 
         return next();
-    } catch (error: any) {
+    } catch {
         return res.status(401).json({ message: "Token inválido" });
     }
 };
