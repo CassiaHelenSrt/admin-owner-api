@@ -1,25 +1,40 @@
 import { Request, Response } from "express";
 import { ProductService } from "../services/product.service";
 import { UserRole } from "../entities/User";
+import { CreateProductDTO, UpdateProductDTO } from "../types/CreateProductDTO";
+import { getErrorMessage } from "../utils/errors";
 
 import * as fs from "fs";
 import * as path from "path";
 
 const productService = new ProductService();
 
+function sanitizeBody(body: Record<string, string>): Record<string, string> {
+    const sanitized: Record<string, string> = {};
+
+    for (const key in body) {
+        sanitized[key.trim()] = body[key];
+    }
+
+    return sanitized;
+}
+
 export const createProduct = async (req: Request, res: Response) => {
     try {
         // 1. Remove os espaços fantasmas das chaves do body enviado
-        const bodySanitizado: any = {};
-        for (const key in req.body) {
-            bodySanitizado[key.trim()] = req.body[key];
-        }
+        const bodySanitizado = sanitizeBody(req.body);
 
         const { name, type, price, duration, description } = bodySanitizado;
         const userId = req.user?.id;
 
         // Monta o objeto base com os textos recebidos
-        const productData: any = { name, type, price, duration, description };
+        const productData: CreateProductDTO = {
+            name,
+            type,
+            price: Number(price),
+            duration: Number(duration),
+            description,
+        };
 
         // 2. SE o Multer interceptou a foto do produto, adiciona o caminho
         if (req.file) {
@@ -32,7 +47,7 @@ export const createProduct = async (req: Request, res: Response) => {
             userId!,
         );
         res.status(201).json(product);
-    } catch (error: any) {
+    } catch (error) {
         //REDE DE SEGURANÇA: Se deu erro (ex: validação falhou), apaga a foto nova da pasta
         if (req.file) {
             const caminhoNovaFoto = path.resolve(
@@ -43,7 +58,7 @@ export const createProduct = async (req: Request, res: Response) => {
                 fs.unlinkSync(caminhoNovaFoto);
             }
         }
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -61,8 +76,8 @@ export const getProductByUser = async (req: Request, res: Response) => {
         const product = await productService.getProductByUser(userId, userRole);
 
         res.json(product);
-    } catch (error: any) {
-        res.status(500).json({ message: error.message });
+    } catch (error) {
+        res.status(500).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -73,13 +88,16 @@ export const updateProduct = async (req: Request, res: Response) => {
         const userRole = req.user?.role as UserRole;
 
         // 1. Remove os espaços fantasmas das chaves do body enviado
-        const bodySanitizado: any = {};
-        for (const key in req.body) {
-            bodySanitizado[key.trim()] = req.body[key];
-        }
+        const bodySanitizado = sanitizeBody(req.body);
         const { name, type, price, duration, description } = bodySanitizado;
 
-        const updateData: any = { name, type, price, duration, description };
+        const updateData: UpdateProductDTO = {
+            name,
+            type,
+            price: price !== undefined ? Number(price) : undefined,
+            duration: duration !== undefined ? Number(duration) : undefined,
+            description,
+        };
 
         // Se o usuário mandou uma foto nova, coloca o caminho dela nos dados
         if (req.file) {
@@ -95,7 +113,7 @@ export const updateProduct = async (req: Request, res: Response) => {
         );
 
         res.json(updatedProduct);
-    } catch (error: any) {
+    } catch (error) {
         // REDE DE SEGURANÇA: Se deu erro na atualização, joga fora a foto nova que o Multer criou
         if (req.file) {
             const NewPhotoPath = path.resolve(
@@ -106,7 +124,7 @@ export const updateProduct = async (req: Request, res: Response) => {
                 fs.unlinkSync(NewPhotoPath);
             }
         }
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -120,8 +138,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
         await productService.deleteProduct(Number(id), userId!, userRole);
 
         res.status(204).send();
-    } catch (error: any) {
-        // Corrigido para .message
-        res.status(400).json({ message: error.message });
+    } catch (error) {
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };

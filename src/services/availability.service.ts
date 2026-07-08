@@ -152,7 +152,7 @@ export class AvailabilityService {
             const slotEnd = new Date(slotStart);
             slotEnd.setMinutes(slotEnd.getMinutes() + product.duration);
 
-            const isOccupied = schedules.some((schedule: any) => {
+            const isOccupied = schedules.some((schedule: Schedule) => {
                 return (
                     slotStart < schedule.endTime && slotEnd > schedule.startTime
                 );

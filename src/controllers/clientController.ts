@@ -2,41 +2,32 @@ import { Request, Response } from "express";
 
 import { ClientService } from "../services/clientService";
 import { UserRole } from "../entities/User";
+import { CreateClientDTO, UpdateClientDTO } from "../types/CreateClientDTO";
+import { getErrorMessage } from "../utils/errors";
 
 import path from "path";
 import * as fs from "fs";
 
 const clientService = new ClientService();
 
-// export const createClient = async (req: Request, res: Response) => {
-//     try {
-//         const { name, phone, email } = req.body;
+function sanitizeBody(body: Record<string, string>): Record<string, string> {
+    const sanitized: Record<string, string> = {};
 
-//         const userId = req.user?.id;
+    for (const key in body) {
+        sanitized[key.trim()] = body[key];
+    }
 
-//         const client = await clientService.createClient(
-//             { name, phone, email },
-//             userId!,
-//         );
-
-//         res.status(201).json(client);
-//     } catch (error: any) {
-//         res.status(400).json({ message: error.message });
-//     }
-// };
+    return sanitized;
+}
 
 export const createClient = async (req: Request, res: Response) => {
     try {
-        const bodySanitizado: any = {};
-
-        for (const key in req.body) {
-            bodySanitizado[key.trim()] = req.body[key];
-        }
+        const bodySanitizado = sanitizeBody(req.body);
 
         const { name, phone, email } = bodySanitizado;
         const userId = req.user?.id;
 
-        const clientData: any = { name, phone, email };
+        const clientData: CreateClientDTO = { name, phone, email };
 
         if (req.file) {
             clientData.photo = `uploads/clients/${req.file.filename}`;
@@ -44,7 +35,7 @@ export const createClient = async (req: Request, res: Response) => {
 
         const client = await clientService.createClient(clientData, userId!);
         res.status(201).json(client);
-    } catch (error: any) {
+    } catch (error) {
         // SE DEU ERRO e o Multer já tinha salvado um arquivo, nós apagamos ele aqui!
 
         if (req.file) {
@@ -59,7 +50,7 @@ export const createClient = async (req: Request, res: Response) => {
             }
         }
 
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -67,7 +58,7 @@ export const getAllClients = async (req: Request, res: Response) => {
     try {
         const clients = await clientService.getAllClients();
         res.json(clients);
-    } catch (error: any) {
+    } catch (error) {
         res.status(500).json({ message: "Erro ao buscar todos os clientes." });
     }
 };
@@ -86,8 +77,8 @@ export const getClientsByUser = async (req: Request, res: Response) => {
         const clients = await clientService.getClientsByUser(userId, userRole);
 
         res.json(clients);
-    } catch (error: any) {
-        res.status(500).json({ message: error.message });
+    } catch (error) {
+        res.status(500).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -99,8 +90,8 @@ export const getClientDetails = async (req: Request, res: Response) => {
         const client = await clientService.getClientById(Number(id), userId!);
 
         res.status(200).json(client);
-    } catch (error: any) {
-        res.status(404).json({ message: error.message });
+    } catch (error) {
+        res.status(404).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -110,14 +101,10 @@ export const updateClient = async (req: Request, res: Response) => {
         const userId = req.user?.id;
         const userRole = req.user?.role as UserRole;
 
-        // 1. Remove os espaços fantasmas das chaves do body enviado
-        const bodySanitizado: any = {};
-        for (const key in req.body) {
-            bodySanitizado[key.trim()] = req.body[key];
-        }
+        const bodySanitizado = sanitizeBody(req.body);
         const { name, phone, email } = bodySanitizado;
 
-        const updateData: any = { name, phone, email };
+        const updateData: UpdateClientDTO = { name, phone, email };
 
         if (req.file) {
             updateData.photo = `uploads/products/${req.file.filename}`;
@@ -132,7 +119,7 @@ export const updateClient = async (req: Request, res: Response) => {
         );
 
         res.json(updatedClient);
-    } catch (error: any) {
+    } catch (error) {
         // 5. SE DEU ERRO (ex: e-mail repetido) e o Multer já tinha salvado a nova foto, nós apagamos ela
         if (req.file) {
             const caminhoNovaFoto = path.resolve(
@@ -144,7 +131,7 @@ export const updateClient = async (req: Request, res: Response) => {
             }
         }
 
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };
 
@@ -158,8 +145,7 @@ export const deleteClient = async (req: Request, res: Response) => {
         await clientService.deleteClient(Number(id), userId!, userRole);
 
         res.status(204).send();
-    } catch (error: any) {
-        // Corrigido para .message
-        res.status(400).json({ message: error.message });
+    } catch (error) {
+        res.status(400).json({ message: getErrorMessage(error) });
     }
 };
